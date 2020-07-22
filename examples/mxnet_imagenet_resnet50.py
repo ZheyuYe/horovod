@@ -214,9 +214,9 @@ class SyntheticDataIter(DataIter):
         self.dtype = dtype
         label = np.random.randint(0, num_classes, [self.batch_size, ])
         data = np.random.uniform(-1, 1, data_shape)
-        self.data = mx.nd.array(data, dtype=self.dtype,
+        self.data = mx.np.array(data, dtype=self.dtype,
                                 ctx=ctx)
-        self.label = mx.nd.array(label, dtype=self.dtype,
+        self.label = mx.np.array(label, dtype=self.dtype,
                                  ctx=ctx)
 
     def __iter__(self):

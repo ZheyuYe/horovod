@@ -28,6 +28,7 @@ has_gpu = mx.context.num_gpus() > 0
 
 ccl_supported_types = set(['int32', 'int64', 'float32', 'float64'])
 
+mx.npx.set_np()
 
 class MXTests(unittest.TestCase):
     """
@@ -59,7 +60,7 @@ class MXTests(unittest.TestCase):
             # MXNet uses gpu_id as part of the seed, so to get identical seeds
             # we must set a context.
             mx.random.seed(1234, ctx=ctx)
-            tensor = mx.nd.random.uniform(-100, 100, shape=shapes[dim],
+            tensor = mx.np.random.uniform(-100, 100, shape=shapes[dim],
                                           ctx=ctx)
             tensor = tensor.astype(dtype)
             summed = hvd.allreduce(tensor, average=False, name=str(count))
@@ -92,7 +93,7 @@ class MXTests(unittest.TestCase):
         shapes = [(), (17), (17, 17), (17, 17, 17)]
         for dtype, dim in itertools.product(dtypes, dims):
             mx.random.seed(1234, ctx=ctx)
-            tensor = mx.nd.random.uniform(-100, 100, shape=shapes[dim],
+            tensor = mx.np.random.uniform(-100, 100, shape=shapes[dim],
                                           ctx=ctx)
             tensor = tensor.astype(dtype)
             averaged = hvd.allreduce(tensor, average=True, name=str(count))
@@ -126,7 +127,7 @@ class MXTests(unittest.TestCase):
         shapes = [(), (17), (17, 17), (17, 17, 17)]
         for dtype, dim in itertools.product(dtypes, dims):
             mx.random.seed(1234, ctx=ctx)
-            tensor = mx.nd.random.uniform(-100, 100, shape=shapes[dim],
+            tensor = mx.np.random.uniform(-100, 100, shape=shapes[dim],
                                           ctx=ctx)
             tensor = tensor.astype(dtype)
             multiplied = tensor * size
@@ -162,7 +163,7 @@ class MXTests(unittest.TestCase):
         ctx = self._current_context()
 
         shape = (17 + rank, 3)
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
         try:
             output = hvd.allreduce(tensor)
             output.wait_to_read()
@@ -175,7 +176,7 @@ class MXTests(unittest.TestCase):
             shape = (17, 23 * 57)
         else:
             shape = (17, 23, 57)
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
         try:
             output = hvd.allreduce(tensor)
             output.wait_to_read()
@@ -196,7 +197,7 @@ class MXTests(unittest.TestCase):
 
         ctx = self._current_context()
         shape = (17, 3)
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
         if rank % 2 == 0:
             tensor = tensor.astype('int32')
         else:
@@ -230,7 +231,7 @@ class MXTests(unittest.TestCase):
             ctx = mx.gpu(hvd.rank())
         else:
             ctx = mx.cpu(hvd.rank())
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
 
         try:
             output = hvd.allreduce(tensor)
@@ -251,7 +252,7 @@ class MXTests(unittest.TestCase):
         count = 0
         shapes = [(), (17), (17, 17), (17, 17, 17)]
         for i, dim in enumerate(dims):
-            tensor = mx.nd.ones(shape=shapes[dim], ctx=ctx)
+            tensor = mx.np.ones(shape=shapes[dim], ctx=ctx)
             # tensor*(i+1) result will be destroyed immediately after this call
             # See https://github.com/horovod/horovod/issues/1533
             sum = hvd.allreduce(tensor * (i + 1), average=False)
@@ -269,7 +270,7 @@ class MXTests(unittest.TestCase):
             self.skipTest("Only one worker available")
 
         dtypes = ['int32',   'int64',
-                  'float32', 'float64'] 
+                  'float32', 'float64']
         dims = [1, 2, 3]
         ctx = self._current_context()
         count = 0
@@ -277,8 +278,8 @@ class MXTests(unittest.TestCase):
         root_ranks = list(range(size))
         for dtype, dim, root_rank in itertools.product(dtypes, dims,
                                                        root_ranks):
-            tensor = mx.nd.ones(shapes[dim], ctx=ctx) * rank
-            root_tensor = mx.nd.ones(shapes[dim], ctx=ctx) * root_rank
+            tensor = mx.np.ones(shapes[dim], ctx=ctx) * rank
+            root_tensor = mx.np.ones(shapes[dim], ctx=ctx) * root_rank
             tensor = tensor.astype(dtype)
             root_tensor = root_tensor.astype(dtype)
 
@@ -287,7 +288,7 @@ class MXTests(unittest.TestCase):
             if rank != root_rank:
                 if same(tensor.asnumpy(), root_tensor.asnumpy()):
                     print("broadcast", count, dtype, dim,
-                          mx.nd.max(tensor == root_tensor))
+                          mx.np.max(tensor == root_tensor))
                     print("tensor", hvd.rank(), tensor)
                     print("root_tensor", hvd.rank(), root_tensor)
                     print("comparison", hvd.rank(), tensor == root_tensor)
@@ -313,7 +314,7 @@ class MXTests(unittest.TestCase):
             self.skipTest("Only one worker available")
 
         dtypes = ['int32',   'int64',
-                  'float32', 'float64'] 
+                  'float32', 'float64']
         dims = [1, 2, 3]
         ctx = self._current_context()
         count = 0
@@ -321,8 +322,8 @@ class MXTests(unittest.TestCase):
         root_ranks = list(range(size))
         for dtype, dim, root_rank in itertools.product(dtypes, dims,
                                                        root_ranks):
-            tensor = mx.nd.ones(shapes[dim], ctx=ctx) * rank
-            root_tensor = mx.nd.ones(shapes[dim], ctx=ctx) * root_rank
+            tensor = mx.np.ones(shapes[dim], ctx=ctx) * rank
+            root_tensor = mx.np.ones(shapes[dim], ctx=ctx) * root_rank
             tensor = tensor.astype(dtype)
             root_tensor = root_tensor.astype(dtype)
 
@@ -333,7 +334,7 @@ class MXTests(unittest.TestCase):
             if rank != root_rank:
                 if same(tensor.asnumpy(), root_tensor.asnumpy()):
                     print("broadcast", count, dtype, dim,
-                          mx.nd.max(tensor == root_tensor))
+                          mx.np.max(tensor == root_tensor))
                     print("tensor", hvd.rank(), tensor)
                     print("root_tensor", hvd.rank(), root_tensor)
                     print("comparison", hvd.rank(), tensor == root_tensor)
@@ -359,7 +360,7 @@ class MXTests(unittest.TestCase):
             self.skipTest("Only one worker available")
 
         dtypes = ['int32',   'int64',
-                  'float32', 'float64'] 
+                  'float32', 'float64']
         dims = [1, 2, 3]
         ctx = self._current_context()
         count = 0
@@ -368,8 +369,8 @@ class MXTests(unittest.TestCase):
         tensor_dict = {}
         root_dict = {}
         for dtype, dim, in itertools.product(dtypes, dims):
-            tensor_dict[count] = mx.nd.ones(shapes[dim], ctx=ctx) * rank
-            root_dict[count] = mx.nd.ones(shapes[dim], ctx=ctx) * root_rank
+            tensor_dict[count] = mx.np.ones(shapes[dim], ctx=ctx) * rank
+            root_dict[count] = mx.np.ones(shapes[dim], ctx=ctx) * root_rank
             tensor_dict[count] = tensor_dict[count].astype(dtype)
             root_dict[count] = root_dict[count].astype(dtype)
 
@@ -399,7 +400,7 @@ class MXTests(unittest.TestCase):
 
         ctx = self._current_context()
         shape = (17, rank+1)
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
 
         try:
             output = hvd.broadcast(tensor, 0)
@@ -421,7 +422,7 @@ class MXTests(unittest.TestCase):
 
         ctx = self._current_context()
         shape = (17, 3)
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
         if rank % 2 == 0:
             tensor = tensor.astype('int32')
         else:
@@ -447,7 +448,7 @@ class MXTests(unittest.TestCase):
 
         ctx = self._current_context()
         shape = (17, 17, 17)
-        tensor = mx.nd.ones(shape=shape, ctx=ctx)
+        tensor = mx.np.ones(shape=shape, ctx=ctx)
         try:
             output = hvd.broadcast(tensor, root_rank=rank)
             output.wait_to_read()
@@ -470,7 +471,7 @@ class MXTests(unittest.TestCase):
         layer.initialize()
         hvd.broadcast_parameters(layer.collect_params(), root_rank=root_rank)
 
-        x = mx.nd.ones((5, 4, 10, 10))
+        x = mx.np.ones((5, 4, 10, 10))
         layer(x)
         tensors = [p.data() for _, p in sorted(layer.collect_params().items())]
         root_tensors = []
@@ -492,7 +493,7 @@ class MXTests(unittest.TestCase):
         dims = [1, 2, 3]
         ctx = self._current_context()
         for dtype, dim in itertools.product(dtypes, dims):
-            tensor = mx.ndarray.ones(shape=[17] * dim, dtype=dtype, ctx=ctx) * rank
+            tensor = mx.nparray.ones(shape=[17] * dim, dtype=dtype, ctx=ctx) * rank
             gathered = hvd.allgather(tensor)
 
             assert list(gathered.shape) == [17 * size] + [17] * (dim - 1)
@@ -523,7 +524,7 @@ class MXTests(unittest.TestCase):
             tensor_sizes = [17, 32, 81, 12, 15, 23, 22] * 5
             tensor_sizes = tensor_sizes[:size]
 
-            tensor = mx.ndarray.ones(
+            tensor = mx.nparray.ones(
                 shape=[tensor_sizes[rank]] + [17] * (dim - 1), dtype=dtype, ctx=ctx) * rank
 
             gathered = hvd.allgather(tensor)
@@ -554,7 +555,7 @@ class MXTests(unittest.TestCase):
 
         tensor_size = [17] * 3
         tensor_size[1] = 10 * (rank + 1)
-        tensor = mx.ndarray.ones(shape=tensor_size, ctx=ctx)
+        tensor = mx.nparray.ones(shape=tensor_size, ctx=ctx)
 
         try:
             hvd.allgather(tensor)
@@ -577,9 +578,9 @@ class MXTests(unittest.TestCase):
 
         tensor_size = [17] * 3
         if rank % 2 == 0:
-            tensor = mx.ndarray.ones(shape=tensor_size, dtype="int32", ctx=ctx)
+            tensor = mx.nparray.ones(shape=tensor_size, dtype="int32", ctx=ctx)
         else:
-            tensor = mx.ndarray.ones(shape=tensor_size, dtype="float32", ctx=ctx)
+            tensor = mx.nparray.ones(shape=tensor_size, dtype="float32", ctx=ctx)
 
         try:
             hvd.allgather(tensor)
@@ -603,21 +604,20 @@ class MXTests(unittest.TestCase):
                                size=1000):
             for _ in range(size):
                 length = np.random.randint(min_len, max_len + 1)
-                rand_src = mx.nd.random.normal(0, 1, (length, dim))
-                rand_dst = mx.nd.random.normal(0, 1, (length, dim))
+                rand_src = mx.np.random.normal(0, 1, (length, dim))
+                rand_dst = mx.np.random.normal(0, 1, (length, dim))
                 yield rand_src, rand_dst
 
         class SimpleNet(HybridBlock):
             def __init__(self, layer_num=6, **kwargs):
                 super(SimpleNet, self).__init__(**kwargs)
                 self._layer_num = layer_num
-                with self.name_scope():
-                    self.ln_l = nn.HybridSequential()
-                    self.dense_l = nn.HybridSequential()
-                    for i in range(layer_num):
-                        self.dense_l.add(nn.Dense(units=32 + layer_num - 1 - i,
-                            flatten=False))
-                        self.ln_l.add(nn.LayerNorm())
+                self.ln_l = nn.HybridSe quential()
+                self.dense_l = nn.HybridSequential()
+                for i in range(layer_num):
+                    self.dense_l.add(nn.Dense(units=32 + layer_num - 1 - i,
+                        flatten=False))
+                    self.ln_l.add(nn.LayerNorm())
 
             def hybrid_forward(self, F, data):
                 """
@@ -653,7 +653,7 @@ class MXTests(unittest.TestCase):
             dst_data = dst_data.as_in_context(ctx).astype(np.float32)
             with mx.autograd.record():
                 pred = net(src_data)
-                loss = mx.nd.abs(pred - dst_data).mean()
+                loss = mx.np.abs(pred - dst_data).mean()
                 loss.backward()
             # Begin to update the parameter
             trainer.step(1.0)

@@ -45,6 +45,7 @@ dll_path = os.path.join(os.path.dirname(__file__),
                         'mpi_lib' + get_ext_suffix())
 MPI_MXNET_LIB_CTYPES = ctypes.CDLL(dll_path, ctypes.RTLD_GLOBAL)
 
+mx.npx.set_np()
 
 def allreduce(tensor, average=True, name=None, priority=0):
     """
@@ -72,7 +73,7 @@ def allreduce(tensor, average=True, name=None, priority=0):
         A tensor of the same shape and type as `tensor`, averaged or summed
         across all processes.
     """
-    output = mx.nd.zeros(shape=tensor.shape, ctx=tensor.context,
+    output = mx.np.zeros(shape=tensor.shape, ctx=tensor.context,
                          dtype=tensor.dtype)
     c_in = tensor.handle
     c_out = output.handle
@@ -148,10 +149,10 @@ def allgather(tensor, name=None, priority=0):
         for the first dimension, which may be greater and is the sum of all
         first dimensions of the tensors in different Horovod processes.
     """
-    assert(isinstance(tensor, mx.nd.NDArray))
+    assert(isinstance(tensor, mx.np.ndarray))
     # Size of output is unknown, create output array that
     # will be resized during Horovod operation
-    output = mx.nd.empty(shape=[1], ctx=tensor.context,
+    output = mx.np.empty(shape=[1], ctx=tensor.context,
                          dtype=tensor.dtype)
     c_in = tensor.handle
     c_out = output.handle
@@ -195,7 +196,7 @@ def broadcast(tensor, root_rank, name=None, priority=0):
     if rank() == root_rank:
         output = tensor.copy()
     else:
-        output = mx.nd.zeros(shape=tensor.shape, ctx=tensor.context,
+        output = mx.np.zeros(shape=tensor.shape, ctx=tensor.context,
                              dtype=tensor.dtype)
     c_in = tensor.handle
     c_out = output.handle
